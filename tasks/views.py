@@ -15,6 +15,9 @@ def edit_task(request, task_id):
     if request.method == "POST":
         task.title = request.POST.get("title")
         task.description = request.POST.get("description")
+        task.due_date = request.POST.get("due_date")
+        task.priority = request.POST.get("priority")
+
         task.save()
 
         return redirect("task_list")
@@ -26,13 +29,31 @@ def add_task(request):
     if request.method == "POST":
         title = request.POST.get("title")
         description = request.POST.get("description")
+        due_date = request.POST.get("due_date")
+        priority = request.POST.get("priority")
+
+        if due_date == "":
+            due_date = None
 
         Task.objects.create(
             title=title,
-            description=description
+            description=description,
+            due_date=due_date,
+            priority=priority,
         )
 
         return redirect("task_list")
 
-    return render(request, "tasks/add_task.html")    
-   
+    return render(request, "tasks/add_task.html")
+
+
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+
+
+@require_POST
+def toggle_task(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    task.completed = not task.completed
+    task.save(update_fields=["completed"])
+    return redirect("task_list")
