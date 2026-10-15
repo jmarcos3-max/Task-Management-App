@@ -1,20 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task
-from django.db.models import Q
+
 
 def task_list(request):
-    query = request.GET.get("q")
     status = request.GET.get("status")
     sort_by = request.GET.get("sort_by", "due_date")
 
     tasks = Task.objects.all()
 
-    # Search
-    if query:
-        tasks = tasks.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query)
-        )
 
     # Filter by status
     if status == "complete":
@@ -37,7 +30,6 @@ def task_list(request):
 
     return render(request, "tasks/task_list.html", {
         "tasks": tasks,
-        "query": query,
         "status": status,
         "sort_by": sort_by,
     })
