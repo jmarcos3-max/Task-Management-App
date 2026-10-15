@@ -1,12 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task
-
+from django.db.models import Q
 
 def task_list(request):
     tasks = Task.objects.all()
+    query = request.GET.get("q")
+
+    if query:
+        tasks = tasks.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        )
 
     return render(request, "tasks/task_list.html", {
-        "tasks": tasks
+        "tasks": tasks,
+        "query": query
     })
 
 def edit_task(request, task_id):
