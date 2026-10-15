@@ -22,7 +22,7 @@ def edit_task(request, task_id):
     if request.method == "POST":
         task.title = request.POST.get("title")
         task.description = request.POST.get("description")
-        task.due_date = request.POST.get("due_date")
+        task.due_date = request.POST.get("due_date") or None
         task.priority = request.POST.get("priority")
 
         task.save()
