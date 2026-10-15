@@ -10,6 +10,12 @@
 
     <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
 
+    <form method="GET" class="mb-4">
+        <input type="text" name="q" class="form-control" placeholder="Search Tasks..." value="{{ query|default:'' }}">
+        <button type="submit" class="btn btn-secondary">Search</button>
+        <a href="{% url 'task_list' %}">Clear</a>
+    </form>
+
     <div class="row">
         {% for task in tasks %}
         <div class="col-md-4 mb-3">
@@ -19,7 +25,14 @@
                     <h5 class="card-title">{{ task.title }}</h5>
                     <p>{{ task.description }}</p>
                     <p>Due: {{ task.due_date|default:"Not set" }}</p>
-                    <p>Priority: {{ task.priority }}</p>
+                    <p>Priority: {% if task.priority == "High"%}
+                        <span class="badge bg-danger">High</span>
+                    {% elif task.priority == "Medium" %}
+                        <span class="badge bg-warning text-dark">Medium</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Low</span>
+                    {% endif %}
+                    </p>
 
                     <p>
                         Status:
