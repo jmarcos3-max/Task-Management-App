@@ -5,43 +5,57 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-
+<div class="container mt-4">
     <h1>My Tasks</h1>
 
-    <a href="/add/" class="btn btn-primary">Add Task</a>
+    <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
 
     <div class="row">
-    {% for task in tasks %}
-        <div class="col-md-4">
+        {% for task in tasks %}
+        <div class="col-md-4 mb-3">
             <div class="card">
                 <div class="card-body">
-    <div class="dropdown float-end">
-        <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Task options">
-            &#8942;
-        </button>
 
-        <ul class="dropdown-menu">
-            <li>
-                <a class="dropdown-item" href="{% url 'edit_task' task.id %}">Edit</a>
-            </li>
-        </ul>
-    </div>
+                    <h5 class="card-title">{{ task.title }}</h5>
+                    <p>{{ task.description }}</p>
+                    <p>Due: {{ task.due_date|default:"Not set" }}</p>
+                    <p>Priority: {{ task.priority }}</p>
 
-    <h5 class="card-title">{{ task.title }}</h5>
-    <p class="card-text">{{ task.description }}</p>
-</div>
+                    <p>
+                        Status:
+                        {% if task.completed %}
+                            <span class="badge bg-success">Complete</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Incomplete</span>
+                        {% endif %}
+                    </p>
 
+                    <a href="{% url 'edit_task' task.id %}" class="btn btn-primary">
+                        Edit
+                    </a>
 
+                    <form method="post"
+                          action="{% url 'toggle_task' task.id %}"
+                          class="d-inline">
+                        {% csrf_token %}
+                        {% if task.completed %}
+                            <button type="submit" class="btn btn-warning">
+                                Mark Incomplete
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success">
+                                Mark Complete
+                            </button>
+                        {% endif %}
+                    </form>
+
+                </div>
             </div>
         </div>
-    {% empty %}
-        <p>No tasks yet.</p>
-    {% endfor %}
+        {% empty %}
+            <p>No tasks yet.</p>
+        {% endfor %}
+    </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
 </body>
 </html>
