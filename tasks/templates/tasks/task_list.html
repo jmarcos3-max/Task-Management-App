@@ -5,6 +5,53 @@
 <head>
     <title>Task Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <form method="get" action="{% url 'task_list' %}" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="">All tasks</option>
+                <option value="complete" {% if status == 'complete' %}selected{% endif %}>
+                    Complete only
+                </option>
+                <option value="incomplete" {% if status == 'incomplete' %}selected{% endif %}>
+                    Incomplete only
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <select name="sort_by" class="form-select">
+                <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>
+                    Due date: earliest first
+                </option>
+                <option value="due_date_desc" {% if sort_by == 'due_date_desc' %}selected{% endif %}>
+                    Due date: latest first
+                </option>
+                <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>
+                    Priority: low to high
+                </option>
+                <option value="priority_desc" {% if sort_by == 'priority_desc' %}selected{% endif %}>
+                    Priority: high to low
+                </option>
+                <option value="title" {% if sort_by == 'title' %}selected{% endif %}>
+                    Title: A to Z
+                </option>
+                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
+                    Newest first
+                </option>
+                <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
+                    Oldest first
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-outline-primary w-100">
+                Apply
+            </button>
+        </div>
+    </div>
+</form>
 </head>
 <body>
 <div class="container mt-4">
@@ -126,6 +173,17 @@
                             </button>
                         {% endif %}
                     </form>
+
+                    <form method="post"
+                        action="{% url 'delete_task' task.id %}"
+                        class="d-inline"
+                        onsubmit="return confirm('Delete this task?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Delete
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>

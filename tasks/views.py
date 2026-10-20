@@ -3,6 +3,9 @@ from .models import Task
 from django.db.models import Q
 
 def task_list(request):
+    status = request.GET.get("status")
+    sort_by = request.GET.get("sort_by", "due_date")
+
     tasks = Task.objects.all()
     query = request.GET.get("q")
 
@@ -11,9 +14,31 @@ def task_list(request):
             Q(title__icontains=query) | Q(description__icontains=query)
         )
 
+
+    # Filter by status
+    if status == "complete":
+        tasks = tasks.filter(completed=True)
+    elif status == "incomplete":
+        tasks = tasks.filter(completed=False)
+
+    # Sort tasks
+    sort_options = {
+        "due_date": "due_date",
+        "due_date_desc": "-due_date",
+        "priority": "priority",
+        "priority_desc": "-priority",
+        "title": "title",
+        "newest": "-id",
+        "oldest": "id",
+    }
+
+    tasks = tasks.order_by(sort_options.get(sort_by, "due_date"))
+
     return render(request, "tasks/task_list.html", {
         "tasks": tasks,
-        "query": query
+    "query": query,
+    "status": status,
+    "sort_by": sort_by,
     })
 
 def edit_task(request, task_id):
@@ -63,4 +88,12 @@ def toggle_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     task.completed = not task.completed
     task.save(update_fields=["completed"])
+    return redirect("task_list")
+
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    if request.method == "POST":
+        task.delete()
+
     return redirect("task_list")
