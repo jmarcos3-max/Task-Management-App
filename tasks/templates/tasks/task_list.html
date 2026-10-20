@@ -12,30 +12,37 @@
 
     <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
 	
-	<div class="mb-3">
+	<!-- View Buttons -->
+<div class="mb-3">
     <button type="button" id="cardBtn"
             class="btn btn-primary" onclick="showCards()">
         Card View
     </button>
 
-<<<<<<< HEAD
-    <form method="GET" class="mb-4">
-        <input type="text" name="q" class="form-control" placeholder="Search Tasks..." value="{{ query|default:'' }}">
-        <button type="submit" class="btn btn-secondary">Search</button>
-        <a href="{% url 'task_list' %}">Clear</a>
-    </form>
-
-    <div class="row">
-=======
     <button type="button" id="listBtn"
             class="btn btn-outline-primary" onclick="showList()">
         List View
     </button>
 </div>
 
+<!-- Search Tasks -->
+<form method="GET" class="mb-4">
+    <input type="text" name="q" class="form-control mb-2"
+           placeholder="Search Tasks..."
+           value="{{ query|default:'' }}">
+
+    <button type="submit" class="btn btn-secondary">
+        Search
+    </button>
+
+    <a href="{% url 'task_list' %}" class="btn btn-outline-secondary">
+        Clear
+    </a>
+</form>
+
 
     <div class="row" id="cardView">
->>>>>>> 58404dff7507049f010a9c65e6b2fcd5005711b6
+
         {% for task in tasks %}
         <div class="col-md-4 mb-3">
            <div class="card h-100 {% if task.completed %}bg-light border-success{% endif %}">
