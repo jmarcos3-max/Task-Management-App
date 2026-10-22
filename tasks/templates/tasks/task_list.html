@@ -124,6 +124,19 @@
                        for="colorblind-toggle">
                     Colorblind-friendly mode
                 </label>
+                </div>
+		<hr class="dropdown-divider">
+<p class="mb-2">Font Size</p>
+
+<div class="d-flex gap-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm"
+            onclick="setFontSize('14px')">Small</button>
+
+    <button type="button" class="btn btn-outline-secondary btn-sm"
+            onclick="setFontSize('18px')">Medium</button>
+
+    <button type="button" class="btn btn-outline-secondary btn-sm"
+            onclick="setFontSize('20px')">Large</button>
             </div>
         </div>
     </div>
@@ -432,7 +445,11 @@
 </div>
 
 <script>
-    function showCards() {
+function setFontSize(size) {
+    document.body.style.fontSize = size;
+    sessionStorage.setItem("fontSize", size);
+}
+function showCards() {
         document.getElementById("cardView").style.display = "flex";
         document.getElementById("listView").style.display = "none";
 
@@ -453,6 +470,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
+	setFontSize(sessionStorage.getItem("fontSize") || "16px");
         if (sessionStorage.getItem("taskView") === "list") {
             showList();
         } else {
