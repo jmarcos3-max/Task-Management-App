@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task
 from django.db.models import Q
+from django.db.models import Case, When, Value, IntegerField
 
 def task_list(request):
     status = request.GET.get("status")
@@ -22,11 +23,22 @@ def task_list(request):
         tasks = tasks.filter(completed=False)
 
     # Sort tasks
+    if sort_by in ["priority", "priority_desc"]:
+        tasks = tasks.annotate(
+          priority_order=Case(
+            When(priority="Low", then=Value(1)),
+            When(priority="Medium", then=Value(2)),
+            When(priority="High", then=Value(3)),
+            default=Value(4),
+            output_field=IntegerField(),
+        )
+    )
+
     sort_options = {
         "due_date": "due_date",
         "due_date_desc": "-due_date",
-        "priority": "priority",
-        "priority_desc": "-priority",
+        "priority": "priority_order",
+        "priority_desc": "-priority_order",
         "title": "title",
         "newest": "-id",
         "oldest": "id",

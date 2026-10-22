@@ -100,67 +100,44 @@
 
 <body>
 <div class="container mt-4">
-    <h1>My Tasks</h1>
-        <div class="form-check form-switch mb-3">
-        <input class="form-check-input"
-            type="checkbox"
-            role="switch"
-            id="colorblind-toggle">
-        <label class="form-check-label" for="colorblind-toggle">
-            Colorblind-friendly mode
-        </label>
-    </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">My Tasks</h1>
 
-    <!-- Sort Tasks -->
-    <form method="get" action="{% url 'task_list' %}" class="mb-3">
-        <div class="row g-2">
-            <div class="col-md-4">
-                <select name="sort_by" class="form-select">
-                    <option value="due_date"
-                            {% if sort_by == 'due_date' %}selected{% endif %}>
-                        Due date: earliest first
-                    </option>
-                    <option value="due_date_desc"
-                            {% if sort_by == 'due_date_desc' %}selected{% endif %}>
-                        Due date: latest first
-                    </option>
-                    <option value="priority"
-                            {% if sort_by == 'priority' %}selected{% endif %}>
-                        Priority: low to high
-                    </option>
-                    <option value="priority_desc"
-                            {% if sort_by == 'priority_desc' %}selected{% endif %}>
-                        Priority: high to low
-                    </option>
-                    <option value="title"
-                            {% if sort_by == 'title' %}selected{% endif %}>
-                        Title: A to Z
-                    </option>
-                    <option value="newest"
-                            {% if sort_by == 'newest' %}selected{% endif %}>
-                        Newest first
-                    </option>
-                    <option value="oldest"
-                            {% if sort_by == 'oldest' %}selected{% endif %}>
-                        Oldest first
-                    </option>
-                </select>
-            </div>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            Accessibility
+        </button>
 
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-outline-primary w-100">
-                    Apply
-                </button>
+        <div class="dropdown-menu dropdown-menu-end p-3"
+             style="min-width: 250px;">
+
+            <div class="form-check form-switch">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       id="colorblind-toggle">
+
+                <label class="form-check-label"
+                       for="colorblind-toggle">
+                    Colorblind-friendly mode
+                </label>
             </div>
         </div>
-    </form>
+    </div>
+</div>
+        
 
     <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">
         Add Task
     </a>
 
-    <!-- View Buttons -->
-    <div class="mb-3">
+    <!-- View Buttons and Sort -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+
+    <div>
         <button type="button"
                 id="cardBtn"
                 class="btn btn-primary"
@@ -176,12 +153,46 @@
         </button>
     </div>
 
+    <form method="get"
+          action="{% url 'task_list' %}"
+          class="d-flex gap-2">
+
+        <select name="sort_by" class="form-select">
+            <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>
+                Due date: earliest first
+            </option>
+            <option value="due_date_desc" {% if sort_by == 'due_date_desc' %}selected{% endif %}>
+                Due date: latest first
+            </option>
+            <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>
+                Priority: low to high
+            </option>
+            <option value="priority_desc" {% if sort_by == 'priority_desc' %}selected{% endif %}>
+                Priority: high to low
+            </option>
+            <option value="title" {% if sort_by == 'title' %}selected{% endif %}>
+                Title: A to Z
+            </option>
+            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
+                Newest first
+            </option>
+            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
+                Oldest first
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-outline-primary">
+            Apply
+        </button>
+    </form>
+</div>
+
     <!-- Search Tasks -->
     <form method="GET" class="mb-4">
         <input type="text"
                name="q"
                class="form-control mb-2"
-               placeholder="Search Tasks..."
+               placeholder="Search Tasks by Title or Description"
                value="{{ query|default:'' }}">
 
         <button type="submit" class="btn btn-secondary">
@@ -397,6 +408,17 @@
                                 </button>
                             {% endif %}
                         </form>
+			<form method="post"
+      action="{% url 'delete_task' task.id %}"
+      class="d-inline"
+      onsubmit="return confirm('Delete this task?');">
+
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-danger btn-sm">
+        Delete
+    </button>
+</form>
                     </td>
                 </tr>
                 {% empty %}
