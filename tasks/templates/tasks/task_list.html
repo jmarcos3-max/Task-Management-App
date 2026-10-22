@@ -11,31 +11,101 @@
     <h1>My Tasks</h1>
 
     <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
-	
-	<div class="mb-3">
-    <button type="button" id="cardBtn" class="btn btn-primary" onclick="showCards()">
-      Card View
-    </button>
-    <button type="button" id="listBtn" class="btn btn-outline-primary" onclick="showList()">
-        List View
-    </button>
-    <form method="GET" class="mb-4">
-        <input type="text" name="q" class="form-control" placeholder="Search By Tasks Title or Description..." value="{{ query|default:'' }}">
-        <button type="submit" class="btn btn-secondary mt-2">Search</button>
-        <a href="{% url 'task_list' %}">Clear</a>
-    </form>
-</div>
+    
+	    <!-- View Buttons -->
+    <div class="mb-3">
+        <button type="button" id="cardBtn" class="btn btn-primary" onclick="showCards()">
+            Card View
+        </button>
+        <button type="button" id="listBtn" class="btn btn-outline-primary" onclick="showList()">
+            List View
+        </button>
+    </div>
 
+    <!-- Search, Filter and Sort -->
+    <form method="get" action="{% url 'task_list' %}" class="mb-4">
+        <div class="row g-2">
+            <div class="col-12">
+                <input type="text" name="q" class="form-control"
+                       placeholder="Search By Tasks Title or Description..."
+                       value="{{ query|default:'' }}">
+            </div>
+
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All tasks</option>
+                    <option value="complete" {% if status == 'complete' %}selected{% endif %}>Complete only</option>
+                    <option value="incomplete" {% if status == 'incomplete' %}selected{% endif %}>Incomplete only</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <select name="sort_by" class="form-select">
+                    <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>Due date: earliest first</option>
+                    <option value="due_date_desc" {% if sort_by == 'due_date_desc' %}selected{% endif %}>Due date: latest first</option>
+                    <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority: low to high</option>
+                    <option value="priority_desc" {% if sort_by == 'priority_desc' %}selected{% endif %}>Priority: high to low</option>
+                    <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title: A to Z</option>
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest first</option>
+                    <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest first</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary flex-fill">Apply</button>
+                <a href="{% url 'task_list' %}" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
 
     <div class="row" id="cardView">
 
         {% for task in tasks %}
         <div class="col-md-4 mb-3">
-            <div class="card">
+           <div class="card h-100 {% if task.completed %}bg-light border-success{% endif %}">
                 <div class="card-body">
 
-                    <h5 class="card-title">{{ task.title }}</h5>
-                    <p>{{ task.description }}</p>
+                    <h5 class="card-title {% if task.completed %}text-decoration-line-through text-muted{% endif %}">
+    {{ task.title }}
+</h5>
+                    <p>
+    {{ task.description|truncatechars:50 }}
+
+    {% if task.description|length > 50 %}
+        <button type="button"
+                class="btn btn-link btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#cardDescriptionModal{{ task.id }}">
+            View Description
+        </button>
+    {% endif %}
+</p>
+
+{% if task.description|length > 50 %}
+<div class="modal fade"
+     id="cardDescriptionModal{{ task.id }}"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">{{ task.title }}</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                {{ task.description|linebreaksbr }}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}
                     <p>Due: {{ task.due_date|default:"Not set" }}</p>
                     <p>Priority: {% if task.priority == "High"%}
                         <span class="badge bg-danger">High</span>
@@ -73,6 +143,17 @@
                             </button>
                         {% endif %}
                     </form>
+
+                    <form method="post"
+                        action="{% url 'delete_task' task.id %}"
+                        class="d-inline"
+                        onsubmit="return confirm('Delete this task?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Delete
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -97,7 +178,7 @@
 
         <tbody>
             {% for task in tasks %}
-            <tr>
+            <tr class="{% if task.completed %}text-decoration-line-through{% endif %}">
                 <td>{{ task.title }}</td>
 <td>
     {{ task.description|truncatechars:50 }}
