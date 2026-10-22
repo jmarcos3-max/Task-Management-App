@@ -1,149 +1,260 @@
-
-
 <!DOCTYPE html>
-<html>
+<html>  
 <head>
     <title>Task Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <form method="get" action="{% url 'task_list' %}" class="mb-3">
-    <div class="row g-2">
-        <div class="col-md-4">
-            <select name="status" class="form-select">
-                <option value="">All tasks</option>
-                <option value="complete" {% if status == 'complete' %}selected{% endif %}>
-                    Complete only
-                </option>
-                <option value="incomplete" {% if status == 'incomplete' %}selected{% endif %}>
-                    Incomplete only
-                </option>
-            </select>
-        </div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <style>
+        /* Alternative colors, active only when the mode is enabled */
+        html.colorblind-mode {
+            --bs-primary-rgb: 0, 114, 178;
+            --bs-success-rgb: 0, 114, 178;
+            --bs-danger-rgb: 213, 94, 0;
+            --bs-warning-rgb: 230, 159, 0;
+            --bs-secondary-rgb: 89, 89, 89;
 
-        <div class="col-md-4">
-            <select name="sort_by" class="form-select">
-                <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>
-                    Due date: earliest first
-                </option>
-                <option value="due_date_desc" {% if sort_by == 'due_date_desc' %}selected{% endif %}>
-                    Due date: latest first
-                </option>
-                <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>
-                    Priority: low to high
-                </option>
-                <option value="priority_desc" {% if sort_by == 'priority_desc' %}selected{% endif %}>
-                    Priority: high to low
-                </option>
-                <option value="title" {% if sort_by == 'title' %}selected{% endif %}>
-                    Title: A to Z
-                </option>
-                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
-                    Newest first
-                </option>
-                <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
-                    Oldest first
-                </option>
-            </select>
-        </div>
+            --bs-link-color: #005a8d;
+            --bs-link-color-rgb: 0, 90, 141;
+            --bs-link-hover-color: #003f63;
+            --bs-link-hover-color-rgb: 0, 63, 99;
+        }
 
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-outline-primary w-100">
-                Apply
-            </button>
-        </div>
-    </div>
-</form>
+        /* Button colors */
+        .colorblind-mode .btn-primary,
+        .colorblind-mode .btn-success,
+        .colorblind-mode .btn-outline-primary {
+            --accessible-color: #0072b2;
+            --accessible-text: #ffffff;
+        }
+
+        .colorblind-mode .btn-danger {
+            --accessible-color: #d55e00;
+            --accessible-text: #000000;
+        }
+
+        .colorblind-mode .btn-warning {
+            --accessible-color: #e69f00;
+            --accessible-text: #000000;
+        }
+
+        .colorblind-mode .btn-secondary,
+        .colorblind-mode .btn-outline-secondary {
+            --accessible-color: #595959;
+            --accessible-text: #ffffff;
+        }
+
+        .colorblind-mode .btn:not(.btn-link) {
+            --bs-btn-bg: var(--accessible-color);
+            --bs-btn-color: var(--accessible-text);
+            --bs-btn-border-color: var(--accessible-color);
+            --bs-btn-hover-bg: var(--accessible-color);
+            --bs-btn-hover-color: var(--accessible-text);
+            --bs-btn-hover-border-color: var(--accessible-color);
+            --bs-btn-active-bg: var(--accessible-color);
+            --bs-btn-active-color: var(--accessible-text);
+            --bs-btn-active-border-color: var(--accessible-color);
+            --bs-btn-focus-shadow-rgb: 0, 0, 0;
+        }
+
+        .colorblind-mode .btn-outline-primary,
+        .colorblind-mode .btn-outline-secondary {
+            --bs-btn-bg: transparent;
+            --bs-btn-color: var(--accessible-color);
+        }
+
+        .colorblind-mode .btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Black text on the orange and vermilion badges */
+        .colorblind-mode .badge.bg-danger,
+        .colorblind-mode .badge.bg-warning {
+            color: #000000 !important;
+        }
+
+        /* Add a non-color cue to completed cards */
+        .colorblind-mode .card.border-success {
+            border-style: dashed;
+            border-width: 2px;
+        }
+
+        /* Form controls and the mode switch */
+        .colorblind-mode .form-control:focus,
+        .colorblind-mode .form-select:focus,
+        .colorblind-mode .form-check-input:focus {
+            border-color: #0072b2;
+            box-shadow: 0 0 0 0.2rem rgba(0, 114, 178, 0.25);
+        }
+
+        .colorblind-mode .form-check-input:checked {
+            background-color: #0072b2;
+            border-color: #0072b2;
+        }
+
+        .colorblind-mode :focus-visible {
+            outline: 3px solid #212529;
+            outline-offset: 3px;
+        }
+    </style>    
 </head>
+
 <body>
 <div class="container mt-4">
     <h1>My Tasks</h1>
+        <div class="form-check form-switch mb-3">
+        <input class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="colorblind-toggle">
+        <label class="form-check-label" for="colorblind-toggle">
+            Colorblind-friendly mode
+        </label>
+    </div>
 
-    <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
-	
-	<!-- View Buttons -->
-<div class="mb-3">
-    <button type="button" id="cardBtn"
-            class="btn btn-primary" onclick="showCards()">
-        Card View
-    </button>
+    <!-- Sort Tasks -->
+    <form method="get" action="{% url 'task_list' %}" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <select name="sort_by" class="form-select">
+                    <option value="due_date"
+                            {% if sort_by == 'due_date' %}selected{% endif %}>
+                        Due date: earliest first
+                    </option>
+                    <option value="due_date_desc"
+                            {% if sort_by == 'due_date_desc' %}selected{% endif %}>
+                        Due date: latest first
+                    </option>
+                    <option value="priority"
+                            {% if sort_by == 'priority' %}selected{% endif %}>
+                        Priority: low to high
+                    </option>
+                    <option value="priority_desc"
+                            {% if sort_by == 'priority_desc' %}selected{% endif %}>
+                        Priority: high to low
+                    </option>
+                    <option value="title"
+                            {% if sort_by == 'title' %}selected{% endif %}>
+                        Title: A to Z
+                    </option>
+                    <option value="newest"
+                            {% if sort_by == 'newest' %}selected{% endif %}>
+                        Newest first
+                    </option>
+                    <option value="oldest"
+                            {% if sort_by == 'oldest' %}selected{% endif %}>
+                        Oldest first
+                    </option>
+                </select>
+            </div>
 
-    <button type="button" id="listBtn"
-            class="btn btn-outline-primary" onclick="showList()">
-        List View
-    </button>
-</div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    Apply
+                </button>
+            </div>
+        </div>
+    </form>
 
-<!-- Search Tasks -->
-<form method="GET" class="mb-4">
-    <input type="text" name="q" class="form-control mb-2"
-           placeholder="Search Tasks..."
-           value="{{ query|default:'' }}">
-
-    <button type="submit" class="btn btn-secondary">
-        Search
-    </button>
-
-    <a href="{% url 'task_list' %}" class="btn btn-outline-secondary">
-        Clear
+    <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">
+        Add Task
     </a>
-</form>
 
+    <!-- View Buttons -->
+    <div class="mb-3">
+        <button type="button"
+                id="cardBtn"
+                class="btn btn-primary"
+                onclick="showCards()">
+            Card View
+        </button>
 
+        <button type="button"
+                id="listBtn"
+                class="btn btn-outline-primary"
+                onclick="showList()">
+            List View
+        </button>
+    </div>
+
+    <!-- Search Tasks -->
+    <form method="GET" class="mb-4">
+        <input type="text"
+               name="q"
+               class="form-control mb-2"
+               placeholder="Search Tasks..."
+               value="{{ query|default:'' }}">
+
+        <button type="submit" class="btn btn-secondary">
+            Search
+        </button>
+
+        <a href="{% url 'task_list' %}" class="btn btn-outline-secondary">
+            Clear
+        </a>
+    </form>
+
+    <!-- Card View -->
     <div class="row" id="cardView">
-
         {% for task in tasks %}
         <div class="col-md-4 mb-3">
-           <div class="card h-100 {% if task.completed %}bg-light border-success{% endif %}">
+            <div class="card h-100 {% if task.completed %}bg-light border-success{% endif %}">
                 <div class="card-body">
-
                     <h5 class="card-title {% if task.completed %}text-decoration-line-through text-muted{% endif %}">
-    {{ task.title }}
-</h5>
+                        {{ task.title }}
+                    </h5>
+
                     <p>
-    {{ task.description|truncatechars:50 }}
+                        {{ task.description|truncatechars:50 }}
 
-    {% if task.description|length > 50 %}
-        <button type="button"
-                class="btn btn-link btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#cardDescriptionModal{{ task.id }}">
-            View Description
-        </button>
-    {% endif %}
-</p>
+                        {% if task.description|length > 50 %}
+                            <button type="button"
+                                    class="btn btn-link btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#cardDescriptionModal{{ task.id }}">
+                                View Description
+                            </button>
+                        {% endif %}
+                    </p>
 
-{% if task.description|length > 50 %}
-<div class="modal fade"
-     id="cardDescriptionModal{{ task.id }}"
-     tabindex="-1"
-     aria-hidden="true">
+                    {% if task.description|length > 50 %}
+                    <div class="modal fade"
+                         id="cardDescriptionModal{{ task.id }}"
+                         tabindex="-1"
+                         aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        {{ task.title }}
+                                    </h5>
 
-    <div class="modal-dialog">
-        <div class="modal-content">
+                                    <button type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
 
-            <div class="modal-header">
-                <h5 class="modal-title">{{ task.title }}</h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body">
-                {{ task.description|linebreaksbr }}
-            </div>
-
-        </div>
-    </div>
-</div>
-{% endif %}
-                    <p>Due: {{ task.due_date|default:"Not set" }}</p>
-                    <p>Priority: {% if task.priority == "High"%}
-                        <span class="badge bg-danger">High</span>
-                    {% elif task.priority == "Medium" %}
-                        <span class="badge bg-warning text-dark">Medium</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Low</span>
+                                <div class="modal-body">
+                                    {{ task.description|linebreaksbr }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
+
+                    <p>Due: {{ task.due_date|default:"Not set" }}</p>
+
+                    <p>
+                        Priority:
+                        {% if task.priority == "High" %}
+                            <span class="badge bg-danger">High</span>
+                        {% elif task.priority == "Medium" %}
+                            <span class="badge bg-warning text-dark">
+                                Medium
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                        {% endif %}
                     </p>
 
                     <p>
@@ -151,11 +262,14 @@
                         {% if task.completed %}
                             <span class="badge bg-success">Complete</span>
                         {% else %}
-                            <span class="badge bg-warning text-dark">Incomplete</span>
+                            <span class="badge bg-warning text-dark">
+                                Incomplete
+                            </span>
                         {% endif %}
                     </p>
 
-                    <a href="{% url 'edit_task' task.id %}" class="btn btn-primary">
+                    <a href="{% url 'edit_task' task.id %}"
+                       class="btn btn-primary">
                         Edit
                     </a>
 
@@ -163,6 +277,7 @@
                           action="{% url 'toggle_task' task.id %}"
                           class="d-inline">
                         {% csrf_token %}
+
                         {% if task.completed %}
                             <button type="submit" class="btn btn-warning">
                                 Mark Incomplete
@@ -175,15 +290,15 @@
                     </form>
 
                     <form method="post"
-                        action="{% url 'delete_task' task.id %}"
-                        class="d-inline"
-                        onsubmit="return confirm('Delete this task?');">
+                          action="{% url 'delete_task' task.id %}"
+                          class="d-inline"
+                          onsubmit="return confirm('Delete this task?');">
                         {% csrf_token %}
+
                         <button type="submit" class="btn btn-danger">
                             Delete
                         </button>
                     </form>
-
                 </div>
             </div>
         </div>
@@ -192,104 +307,108 @@
         {% endfor %}
     </div>
 
-<!-- List View -->
-<div id="listView" style="display: none;">
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Due Date</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+    <!-- List View -->
+    <div id="listView" style="display: none;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-        <tbody>
-            {% for task in tasks %}
-            <tr class="{% if task.completed %}text-decoration-line-through{% endif %}">
-                <td>{{ task.title }}</td>
-<td>
-    {{ task.description|truncatechars:50 }}
+            <tbody>
+                {% for task in tasks %}
+                <tr class="{% if task.completed %}text-decoration-line-through{% endif %}">
+                    <td>{{ task.title }}</td>
 
-    {% if task.description|length > 50 %}
-        <button type="button"
-                class="btn btn-link btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#descriptionModal{{ task.id }}">
-            View Description
-        </button>
+                    <td>
+                        {{ task.description|truncatechars:50 }}
 
-        <div class="modal fade"
-             id="descriptionModal{{ task.id }}"
-             tabindex="-1"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
+                        {% if task.description|length > 50 %}
+                            <button type="button"
+                                    class="btn btn-link btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#descriptionModal{{ task.id }}">
+                                View Description
+                            </button>
 
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ task.title }}</h5>
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
+                            <div class="modal fade"
+                                 id="descriptionModal{{ task.id }}"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                {{ task.title }}
+                                            </h5>
 
-                    <div class="modal-body">
-                        {{ task.description|linebreaksbr }}
-                    </div>
+                                            <button type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                        </div>
 
-                </div>
-            </div>
-        </div>
-    {% endif %}
-</td>
-<td>{{ task.due_date|default:"No due date" }}</td>
-<td>{{ task.priority }}</td>
-<td>
+                                        <div class="modal-body">
+                                            {{ task.description|linebreaksbr }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </td>
 
-    {% if task.completed %}
-        Complete
-    {% else %}
-        Incomplete
-    {% endif %}
-</td>
+                    <td>{{ task.due_date|default:"No due date" }}</td>
+                    <td>{{ task.priority }}</td>
 
-<td>
-    <a href="{% url 'edit_task' task.id %}" class="btn btn-primary btn-sm">
-        Edit
-    </a>
+                    <td>
+                        {% if task.completed %}
+                            Complete
+                        {% else %}
+                            Incomplete
+                        {% endif %}
+                    </td>
 
-    <form method="post"
-          action="{% url 'toggle_task' task.id %}"
-          class="d-inline">
-        {% csrf_token %}
+                    <td>
+                        <a href="{% url 'edit_task' task.id %}"
+                           class="btn btn-primary btn-sm">
+                            Edit
+                        </a>
 
-        {% if task.completed %}
-            <button type="submit" class="btn btn-warning btn-sm">
-                Mark Incomplete
-            </button>
-        {% else %}
-            <button type="submit" class="btn btn-success btn-sm">
-                Mark Complete
-            </button>
-        {% endif %}
-    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">No tasks yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        <form method="post"
+                              action="{% url 'toggle_task' task.id %}"
+                              class="d-inline">
+                            {% csrf_token %}
+
+                            {% if task.completed %}
+                                <button type="submit"
+                                        class="btn btn-warning btn-sm">
+                                    Mark Incomplete
+                                </button>
+                            {% else %}
+                                <button type="submit"
+                                        class="btn btn-success btn-sm">
+                                    Mark Complete
+                                </button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No tasks yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
-
-
-    </div>
 <script>
     function showCards() {
         document.getElementById("cardView").style.display = "flex";
@@ -311,7 +430,7 @@
         sessionStorage.setItem("taskView", "list");
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         if (sessionStorage.getItem("taskView") === "list") {
             showList();
         } else {
@@ -319,6 +438,33 @@
         }
     });
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const colorblindToggle = document.getElementById("colorblind-toggle");
+
+    function setColorblindMode(enabled) {
+        document.documentElement.classList.toggle("colorblind-mode", enabled);
+        colorblindToggle.checked = enabled;
+    }
+
+    try {
+        setColorblindMode(
+            localStorage.getItem("colorblind-mode") === "true"
+        );
+    } catch {
+        setColorblindMode(false);
+    }
+
+    colorblindToggle.addEventListener("change", function () {
+        setColorblindMode(this.checked);
+
+        try {
+            localStorage.setItem("colorblind-mode", String(this.checked));
+        } catch {
+            // The switch still works if browser storage is unavailable.
+        }
+    });
+</script>
 </body>
 </html>
