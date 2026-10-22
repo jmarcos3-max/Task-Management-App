@@ -11,7 +11,7 @@
     <h1>My Tasks</h1>
 
     <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
-    
+
 	    <!-- View Buttons -->
     <div class="mb-3">
         <button type="button" id="cardBtn" class="btn btn-primary" onclick="showCards()">
@@ -20,6 +20,12 @@
         <button type="button" id="listBtn" class="btn btn-outline-primary" onclick="showList()">
             List View
         </button>
+        
+        <div class="btn-group>">
+            <button typoe="button" class="btn btn-outline-secondary" onclick="setFontSize('14px')">Small</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="setFontSize('18px')">Medium</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="setFontSize('20px')">Large</button>
+        </div>
     </div>
 
     <!-- Search, Filter and Sort -->
@@ -281,7 +287,13 @@
         sessionStorage.setItem("taskView", "list");
     }
 
+    function setFontSize(size) {
+        document.body.style.fontSize = size;
+        sessionStorage.setItem("fontSize", size);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        setFontSize(sessionStorage.getItem("fontSize") || "16px");
         if (sessionStorage.getItem("taskView") === "list") {
             showList();
         } else {
